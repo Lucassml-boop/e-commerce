@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,15 +16,9 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!user) return;
-    await deleteDoc(doc(db, "products", id));
-    setProducts((prev) => prev.filter((product) => product.id !== id));
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <main className="flex-grow container mx-auto p-6">
+    <div className="min-h-screen pt-20 bg-gray-100">
+      <div className="container mx-auto p-6">
         <h2 className="text-4xl font-extrabold text-center mb-8 text-gray-800">
           Produtos Disponíveis
         </h2>
@@ -37,10 +31,12 @@ export default function Home() {
               <div className="p-4">
                 <h3 className="text-lg font-bold text-gray-800">{product.title}</h3>
                 <p className="text-gray-600 mt-2">{product.description}</p>
-                <p className="text-blue-500 font-semibold mt-4">R$ {product.price}</p>
-                {user?.uid === product.createdBy && (
+                <p className="text-blue-500 font-semibold mt-4">
+                  R$ {product.price.toFixed(2)}
+                </p>
+                {/* Exibir o botão "Excluir" apenas se o usuário estiver logado e for o criador do produto */}
+                {user && user.uid === product.createdBy && (
                   <button
-                    onClick={() => handleDelete(product.id)}
                     className="mt-4 w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition-colors"
                   >
                     Excluir
@@ -50,7 +46,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
