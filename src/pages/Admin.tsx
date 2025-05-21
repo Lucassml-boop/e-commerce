@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { addProduct } from "../services/ProductService";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 
 export default function Admin() {
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
 
   const handleAddProduct = async () => {
-    await addProduct({ title, price, description, image: "" });
+    if (!user) return;
+
+    await addDoc(collection(db, "products"), {
+      title,
+      price,
+      description,
+      createdBy: user.uid,
+    });
+
     alert("Produto adicionado!");
     setTitle("");
     setPrice(0);

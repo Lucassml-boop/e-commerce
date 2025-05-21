@@ -1,28 +1,29 @@
 import { useEffect, useState } from "react";
-import { getAllProducts } from "../services/ProductService";
-import type { Product } from "../types/Product";
-import Header from "../componentes/Header";
-import { useCart } from "../context/CartContext";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const products = await getAllProducts();
-      setProducts(products);
+      const snapshot = await getDocs(collection(db, "products"));
+      setProducts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     };
 
     fetchProducts();
   }, []);
 
+  const handleDelete = async (id: string) => {
+    if (!user) return;
+    await deleteDoc(doc(db, "products", id));
+    setProducts((prev) => prev.filter((product) => product.id !== id));
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      {/* Header */}
-      <Header />
-
-      {/* Product Grid */}
       <main className="flex-grow container mx-auto p-6">
         <h2 className="text-4xl font-extrabold text-center mb-8 text-gray-800">
           Produtos Disponíveis
@@ -33,23 +34,18 @@ export default function Home() {
               key={product.id}
               className="border rounded-xl shadow-md bg-white hover:shadow-lg transition-shadow duration-300"
             >
-              <img
-                src={product.image || "https://via.placeholder.com/150"}
-                alt={product.title}
-                className="w-full h-48 object-cover rounded-t-xl"
-              />
               <div className="p-4">
                 <h3 className="text-lg font-bold text-gray-800">{product.title}</h3>
                 <p className="text-gray-600 mt-2">{product.description}</p>
-                <p className="text-blue-500 font-semibold mt-4">
-                  R$ {product.price.toFixed(2)}
-                </p>
-                <button
-                  onClick={() => addToCart(product)}
-                  className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors flex items-center justify-center"
-                >
-                  🛒 Adicionar ao Carrinho
-                </button>
+                <p className="text-blue-500 font-semibold mt-4">R$ {product.price}</p>
+                {user?.uid === product.createdBy && (
+                  <button
+                    onClick={() => handleDelete(product.id)}
+                    className="mt-4 w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition-colors"
+                  >
+                    Excluir
+                  </button>
+                )}
               </div>
             </div>
           ))}
