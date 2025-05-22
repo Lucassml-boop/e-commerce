@@ -15,7 +15,7 @@ export default function Login() {
       await login(email, password);
       navigate("/");
     } catch (err: any) {
-      setError(err.message || "E-mail ou senha inválidos.");
+      setError("E-mail ou senha inválidos.");
     }
   };
 
