@@ -37,13 +37,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const uid = userCredential.user.uid;
-
-    const userDoc = await getDoc(doc(db, "users", uid));
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      setUser({ uid, ...userData } as User);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
+  
+      const userDoc = await getDoc(doc(db, "users", uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUser({ uid, ...userData } as User);
+      }
+    } catch (error: any) {
+      console.error("Erro ao fazer login:", error.message);
+      throw new Error(error.message);
     }
   };
 

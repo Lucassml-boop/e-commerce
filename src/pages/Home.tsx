@@ -27,14 +27,18 @@ export default function Home() {
             <div
               key={product.id}
               className="border rounded-xl shadow-md bg-white hover:shadow-lg transition-shadow duration-300"
-            >
+              >
+              <img
+                src={product.imagemUrl || "/fallback-image.png"} // Fallback para imagem padrão
+                alt={product.title}
+                className="w-full h-48 object-cover rounded-t-lg"
+              />
               <div className="p-4">
                 <h3 className="text-lg font-bold text-gray-800">{product.title}</h3>
                 <p className="text-gray-600 mt-2">{product.description}</p>
                 <p className="text-blue-500 font-semibold mt-4">
                   R$ {product.price.toFixed(2)}
                 </p>
-                {/* Exibir o botão "Excluir" apenas se o usuário estiver logado e for o criador do produto */}
                 {user && user.uid === product.createdBy && (
                   <button
                     className="mt-4 w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition-colors"
